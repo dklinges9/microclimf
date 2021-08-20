@@ -284,6 +284,48 @@ globalVariables("globclim")
     maxlai <- ifelse(maxlai < 0.81, 0.81, maxlai)
     minlai <- 0.08
   }
+  if (habitat == 17) {
+    hperiod <- 100
+    peakdoy <- 50
+    maxlai <- 0
+    minlai <- 0
+  }
+  if (habitat == 18) {
+    h2 <- 74.02 + 5.35 * clim[1]
+    h1 <- 203.22 - 35.63 * clim[4]
+    hperiod1 <- wgts(h1, h2, abs(lat), 0, 20)
+    h2 <- 51.18 + 3.77 * clim[1]
+    h1 <- 152
+    hperiod2 <- wgts(h1, h2, abs(lat), 0, 20)
+    hperiod <- (hperiod1 + hperiod2)/2
+    hperiod <- ifelse(hperiod < 30.5, 30.5, hperiod)
+    p2 <- 216.71 - 2.65 * clim[1]
+    p2 <- ifelse(p2 > 244, 244, p2)
+    if (lat < 0) 
+      p2 <- (p2 + diy/2)%%diy
+    p1 <- mmonth[round(clim[5], 0)]
+    peakdoy1 <- wgts(p1, p2, abs(lat), 0, 30)
+    p2 <- 204.97 - -1.08 * clim[1]
+    p2 <- ifelse(p2 > 244, 244, p2)
+    if (lat < 0) 
+      p2 <- (p2 + diy/2)%%diy
+    peakdoy2 <- wgts(p1, p2, abs(lat), 0, 30)
+    peakdoy <- (peakdoy1 + peakdoy2)/2
+    if (clim[1] <= 20) {
+      maxlai1 <- 2.33 + 0.0132 * clim[1]
+      maxlai2 <- 2.62 + 0.05 * clim[1]
+      maxlai <- (maxlai1 + maxlai2)/2
+    }
+    else maxlai <- 3.107
+    minlai <- 0.7
+    x <- 0.8
+    hgt <- 15
+    pctwet <- 0.9
+    windfac <- .7
+    minshade <- 10
+    maxshade <- 80
+  }
+  
   lai <- laigaus(minlai, maxlai, peakdoy, hperiod, 2000)
   if (habitat ==  "Short grasslands" | habitat == 10) lai <- lai / 2
   yhr<-round(mmonth*24,0)
@@ -304,7 +346,7 @@ globalVariables("globclim")
   }
   return(pai[-1])
 }
-.onehab<-function(habitat) {
+.onehab <-function(habitat) {
   if (habitat == 1) {  # Evergreen needleleaf forest
     hgt<-15 # Vegetation height
     x<-0.4  # Campbell x
