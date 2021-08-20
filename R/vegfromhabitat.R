@@ -319,7 +319,6 @@ globalVariables("globclim")
     else maxlai <- 3.107
     minlai <- 0.7
     x <- 0.8
-    hgt <- 15
     pctwet <- 0.9
     windfac <- .7
     minshade <- 10
@@ -459,6 +458,21 @@ globalVariables("globclim")
     leafr<-0.3 # Leaf reflectivity (shortwave)
     leafd<-0.015 # Leaf width (m)
   }
+  if (habitat == 17) { # Open water
+    hgt<-0 # Vegetation height
+    x<-0  # Campbell x
+    gsmax<-0 # Maximum stomatal conductance
+    leafr<-0 # Leaf reflectivity (shortwave)
+    leafd<-0 # Leaf width (m)
+  }
+  if (habitat == 18) { # Freshwater Forested Wetlands
+    hgt<-15 # Vegetation height
+    x<-0.8  # Campbell x
+    gsmax<-0.23 # Maximum stomatal conductance
+    leafr<-0.3 # Leaf reflectivity (shortwave)
+    leafd<-0.1 # Leaf width (m)
+  }
+  
   return(list(hgt=hgt,x=x,gsmax=gsmax,leafr=leafr,leafd=leafd))
 }
 #' Generate vegpetation paramaters form habitat type
