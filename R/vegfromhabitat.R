@@ -36,7 +36,7 @@ globalVariables("globclim")
   for (i in 1:5) {
     r <- raster(globclim[,,i])
     extent(r) <- e
-    clim[i] <- extract(r, ll)
+    clim[i] <- raster::extract(r, ll)
   }
   wgts <- function(x1, x2, ll, lmn, lmx) {
     ll <- ifelse(ll < lmn, lmn, lat)
