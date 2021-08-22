@@ -1,5 +1,6 @@
 globalVariables("globclim")
 .PAIforayear <- function(habitat, lat, long) {
+  diy <- 365
   laigaus <- function(minlai, maxlai, pkday, dhalf, yr) {
     diy <- 365
     sdev <- 0.0082 * dhalf^2 + 0.0717 * dhalf + 13.285
