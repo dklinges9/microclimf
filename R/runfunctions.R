@@ -403,12 +403,19 @@ modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, m
   if (altcorrect==1) {
     tcdif<-elevd*(5/1000)
     tc<-.rta(tcdif,n)+tc
+    # dewpoint
+    tdew<-.rta(tcdif,n)+tdew
   }
   if (altcorrect==2) {
     lr<-.lapserate(climarray$temp,climarray$relhum,climarray$pres)
     lr<-suppressWarnings(.resa(lr,r,dtm))
     tcdif<-.rta(elevd,n)*lr
     tc<-tcdif+tc
+    # dewpoint
+    lr<-.lapserate(tdew,climarray$relhum,climarray$pres)
+    lr<-suppressWarnings(.resa(lr,r,dtm))
+    tcdif<-.rta(elevd,n)*lr
+    tdew<-tcdif+tdew
   }
   out<-list(tme=tme,tc=tc,difr=difr,dirr=dirr,dp=dp,skyem=skyem,
             estl=estl,ea=ea,tdew=tdew,pk=pk,pai=pai,vegx=vegx,lref=lref,veghgt=vegp$hgt,
