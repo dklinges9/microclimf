@@ -396,8 +396,8 @@ modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, m
   # Elevation correction
   # ~~ Fix lapse rate
   if (altcorrect>0) {
-    dtmc<-resample(dtm,r)
-    dtmc<-resample(dtmc,dtm)
+    dtmc<-raster::resample(dtm,r)
+    dtmc<--raster::resample(dtmc,dtm)
     elevd<-dtmc-dtm
   }
   if (altcorrect==1) {
