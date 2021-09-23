@@ -157,8 +157,8 @@
 }
 #' Calculates the solar coefficient
 .solarindex<- function(dtm,alt,azi,slr=NA,apr=NA) {
-  if (class(slr)[1]=="logical") slr<-terrain(dtm,opt="slope")
-  if (class(apr)[1]=="logical") apr<-terrain(dtm,opt="aspect")
+  if (class(slr)[1]=="logical") slr<-raster::terrain(dtm,opt="slope")
+  if (class(apr)[1]=="logical") apr<-raster::terrain(dtm,opt="aspect")
   sl<-.rta(slr,length(azi))
   ap<-.rta(apr,length(azi))
   zen<-pi/2-alt
