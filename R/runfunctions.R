@@ -121,6 +121,7 @@ checkinputs <- function(weather, rainfall, vegp, soilc, dtm, merid = 0, dst = 0,
   dni<-dirr/si
   dni[is.na(dni)]<-0
   dni2<-ifelse(dni>1352,1352,dni)
+  dni2<-ifelse(dni2<0,0,dni2)
   dirr2<-dni2*si
   dif<-dirr-dirr2
   if (max(dif) > 0.01) {
@@ -224,7 +225,7 @@ checkinputs <- function(weather, rainfall, vegp, soilc, dtm, merid = 0, dst = 0,
 #' @param vegp an object of class vegparams as returned by [vegpfromhab()] (see details)
 #' @param soilc an object of class soilcharac as returned by [soilcfromtype()]
 #' @param dtm a RasterLayer object of elevations (see details)
-#' @param windhgt height of wind speed measurement (m) in weather dataset (see details).
+#' @param windhgt height above ground of wind speed measurement (m) in weather dataset (see details).
 #' @param merid optionally, longitude of local time zone meridian (decimal degrees)
 #' @param dst optionally, numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if merid = 0).
 #' @param runchecks optional logical indicating whteher to call [checkinputs()] to run
@@ -314,11 +315,12 @@ modelin <- function(weather, rainfall, vegp, soilc, dtm, windhgt = 2, merid = 0,
 #' @param climarray a list of arrays of weather variables (see details). See also [nctoarray()]
 #' @param rainarray an array of daily rainfall (see details)
 #' @param tme an object of class POSIXlt giving the dates and times for each weather variable stroed in the array
-#' @param r a raster object giving with the resolution, spatial extent, and projection of the weather data (see details)
+#' @param r a raster object giving the resolution, spatial extent, and projection of the weather data (see details)
 #' @param altcorrect a single numeric value indicating whether to apply an elevational lapse rate correction to temperatures (0 = no correction, 1 = fixed lapse rate correction, 2 = humidity-dependent variable lapse rate correction, see details)
 #' @param vegp an object of class vegparams as returned by [vegpfromhab()] (see details)
 #' @param soilc an object of class soilcharac as returned by [soilcfromtype()]
 #' @param dtm a RasterLayer onject of elevations (see details)
+#' @param windhgt height above ground of wind speed measurement (m) in climate array dataset.
 #' @param merid optionally, longitude of local time zone meridian (decimal degrees)
 #' @param dst optionally, numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if merid = 0).
 #' @param runchecks optional logical indicating whether to call [checkinputs()] to run
@@ -347,7 +349,10 @@ modelin <- function(weather, rainfall, vegp, soilc, dtm, windhgt = 2, merid = 0,
 #'
 #' @import raster
 #' @export
-modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, merid = 0, dst = 0, runchecks = FALSE, daily = FALSE) {
+modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, windhgt = 2, merid = 0, dst = 0, runchecks = FALSE, daily = FALSE) {
+  # Correct wind speed
+  mxhgt<-max(.is(vegp$hgt),na.rm=T)
+  climarray$windspeed<-.windcorrect(climarray$windspeed,windhgt,mxhgt)
   # Create weather and rainfall dataset
   weather<-.catoweather(climarray)
   rainfall<-apply(rainarray,3,mean,na.rm=T)
@@ -417,6 +422,7 @@ modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, m
     tcdif<-.rta(elevd,n)*lr
     tdew<-tcdif+tdew
   }
+  ll<-.latlongfromraster(dtm)
   out<-list(tme=tme,tc=tc,difr=difr,dirr=dirr,dp=dp,skyem=skyem,
             estl=estl,ea=ea,tdew=tdew,pk=pk,pai=pai,vegx=vegx,lref=lref,veghgt=vegp$hgt,
             gsmax=vegp$gsmax,clump=clump,gref=gref,rho=soilp$rho,Vm=soilp$Vm,leafd=vegp$leafd,
@@ -437,8 +443,10 @@ modelina<-function(climarray,rainarray,tme,r,altcorrect = 0, vegp, soilc, dtm, m
 #' @param vegp an object of class vegparams as returned by [vegpfromhab()] (see details)
 #' @param soilc an object of class soilcharac as returned by [soilcfromtype()]
 #' @param dtm a RasterLayer onject of elevations (see details)
+#' @param windhgt height above ground of wind speed measurement (m) in weather dataset
 #' @param merid optionally, longitude of local time zone meridian (decimal degrees)
 #' @param dst optionally, numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if merid = 0).
+#' @param runchecks optional logical indicating whether to call [checkinputs()] to run
 #'
 #' @details The format and and units of `weather` must follow that in the example
 #' dataset `climdata`. The array of Plant Area index values in `vegp` must
@@ -476,6 +484,7 @@ modelin_dy <- function(weather, rainfall, vegp, soilc, dtm, windhgt = 2, merid =
 #' @param vegp an object of class vegparams as returned by [vegpfromhab()] (see details)
 #' @param soilc an object of class soilcharac as returned by [soilcfromtype()]
 #' @param dtm a RasterLayer onject of elevations (see details)
+#' @param windhgt height above ground of wind speed measurement (m) in climate array dataset
 #' @param merid optionally, longitude of local time zone meridian (decimal degrees)
 #' @param dst optionally, numeric value representing the time difference from the timezone meridian (hours, e.g. +1 for BST if merid = 0).
 #' @param runchecks optional logical indicating whether to call [checkinputs()] to run
@@ -503,13 +512,26 @@ modelin_dy <- function(weather, rainfall, vegp, soilc, dtm, windhgt = 2, merid =
 #'
 #' @import raster
 #' @export
-modelina_dy <- function(climarray, rainarray, tme, r, altcorrect = 0, vegp, soilc, dtm, merid = 0, dst = 0, runchecks = FALSE) {
+modelina_dy <- function(climarray, rainarray, tme, r, altcorrect = 0, vegp, soilc, dtm, windhgt = 2, merid = 0, dst = 0, runchecks = FALSE) {
+  # get hour of daily min and max
+  th<-apply(climarray$temp,3,mean,na.rm=T)
+  td<-matrix(th,ncol=24,byrow=TRUE)
+  ta<-(c(1:dim(td)[1])-1)*24
+  smn<-apply(td,1,which.min)+ta
+  smx<-apply(td,1,which.max)+ta
+  # Get daily datasets
+  climd_mn<-.climds(climarray,smn)
+  climd_mx<-.climds(climarray,smx)
+  tme2<-tme[smn]
+  micro_mn<-modelina(climd_mn,rainarray,tme2,r,altcorrect,vegp,soilc,dtm,windhgt,merid,dst,runchecks,daily=TRUE)
+  tme2<-tme[smx]
+  micro_mx<-modelina(climd_mx,rainarray,tme2,r,altcorrect,vegp,soilc,dtm,windhgt,merid,dst,runchecks,daily=TRUE)
+  # Convert to dataframe
   climdata<-.catoweather(climarray)
+  # Convert to daily
   climd<-.climtodaily(climdata)
-  tme2<-tme[climd$smn]
-  micro_mn<-modelina(climd$climn,rainarray,tme2,r,altcorrect,vegp,soilc,dtm,merid,dst,runchecks,daily=TRUE)
-  tme2<-tme[climd$smx]
-  micro_mx<-modelina(climd$climn,rainarray,tme2,r,altcorrect,vegp,soilc,dtm,merid,dst,runchecks,daily=TRUE)
+  micro_mn$climdata<-climd$climn
+  micro_mx$climdata<-climd$climx
   out<-list(micro_mn=micro_mn,micro_mx=micro_mx,climdata=climdata)
   class(out)<-"microindaily"
   return(out)
@@ -595,7 +617,7 @@ modelina_dy <- function(climarray, rainarray, tme, r, altcorrect = 0, vegp, soil
 #' # Extract and plot mean soil temperatures
 #' msoilt<-apply(mout$Tz,c(1,2),mean)
 #' plot(raster(msoilt))
-runmicro_hr <- function(micro, reqhgt, pai_a = NA, xyf = NA, zf = NA, soilinit = c(NA, NA),
+runmicro_hr <- function(micro, reqhgt, pai_a = NA, xyf = 1, zf = NA, soilinit = c(NA, NA),
                         tfact = 1.5, surfwet = 1, slr = NA, apr = NA, hor = NA, wsa = NA,
                         maxhgt = NA, twi = NA) {
   # Calculate soil surface temperature and soil moisture
@@ -704,7 +726,7 @@ runmicro_hr <- function(micro, reqhgt, pai_a = NA, xyf = NA, zf = NA, soilinit =
 #' # Extract and plot mean soil temperatures
 #' msoilt<-apply(mout$Tz,c(1,2),mean)
 #' plot(raster(msoilt))
-runmicro_dy <- function(microd, reqhgt, expand = TRUE, pai_a = NA, xyf = NA, zf = NA,
+runmicro_dy <- function(microd, reqhgt, expand = TRUE, pai_a = NA, xyf = 1, zf = NA,
                         soilinit = c(NA, NA), tfact = 1.5, surfwet = 1, slr = NA,
                         apr = NA, hor = NA, wsa = NA, maxhgt = NA, twi = NA) {
   # Calculate soil surface temperature and soil moisture
@@ -901,7 +923,7 @@ writetonc <- function(mout, fileout, dtm, weather, reqhgt, merid = 0, dst = 0) {
 #' latent heat fluxes. However, except when extremely droughted, the matric potential of leaves
 #' is such that `surfwet` ~ 1.
 runmicro_big <- function(weather, rainfall, reqhgt, vegp, soilc, dtm, pathout, hourly = FALSE,
-                         pai_a = NA, xyf = NA, zf = NA, soilinit = c(NA, NA), tfact = 1.5,
+                         pai_a = NA, xyf = 1, zf = NA, soilinit = c(NA, NA), tfact = 1.5,
                          surfwet = 1, merid = 0, dst = 0, runchecks = TRUE) {
   # Calculate universal variables
   path2<-paste0(pathout,"microut/")
@@ -955,7 +977,7 @@ runmicro_big <- function(weather, rainfall, reqhgt, vegp, soilc, dtm, pathout, h
     }
   }
 }
-#' expand runmicro_big daily output to hourly and write as ncff4 file
+#' expand runmicro_big daily output to hourly and write as ncdf4 file
 #'
 #' @description the function `expandtonc` takes the daily output written by [runmicro_big()]
 #' when hourly = F, expands this to hourly, and writes data out as an ncdf4 file.
