@@ -796,6 +796,7 @@ foliageden<-function(z,hgt,pai,shape=1.5,rate=shape/7) {
 #' @param micro object of class microin as returned by [modelin()]
 #' @param reqhgt height above ground at which model outputs are needed (m). Must be positive
 #' @param pai_a an optional array of plant area index values above `reqhgt` (see details)
+#' @param folden an optional array of foliage densities at height `reqhgt` (m^3/m^3)
 #' @param surfwet an optional single numeric value of array of values specifying the proportion
 #' of the canopy surface that should be treated as wet surface (see details)
 #' @param xyf optional input for called function [wind()]
@@ -1018,4 +1019,24 @@ below_dy<-function(microd, reqhgt, expand = TRUE, xyf = 1, zf = NA, soilinit = c
     Tz<-Tzd
   }
   return(Tz)
+}
+#' Create an object of type `soilcharac`
+#' @description The function `soilcfromtype` creates an object of class `soilcharac`
+#' from a raster of soil types and specified ground reflectance
+#'
+#' @param a raster of soiltypes numbered numerically as integers as in `soilparameters`
+#' @param groundr a single numeric value, matrix or raster of soil reflectance (in range 0-1)
+#' @return an object of class `soilcharac`, a list of two raster layers of `soiltype` and
+#' `groundr` converted to a raster.
+#' @import raster
+#' @export
+soilcfromtype <- function(soiltype, groundr = 0.15) {
+  r<-soiltype
+  if (class(groundr)[1] != "RasterLayer") {
+    groundr<-.is(soiltype)*0+groundr
+    groundr<-raster(groundr,template=r)
+  }
+  soilc<-list(soiltype=soiltype,groundr=groundr)
+  class(soilc) <- "soilcharac"
+  return(soilc)
 }
