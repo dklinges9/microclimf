@@ -400,7 +400,8 @@ wind <- function(micro, xyf = 1, zf = NA, psi_m = 0, reqhgt = NA, slr = NA, apr 
 #' it is automatically called.
 soiltemp_hr  <- function(micro, reqhgt = 0.05, xyf = 1, zf = NA, soilinit = c(NA, NA),
                          tfact = 1.5, slr = NA, apr = NA, hor = NA, wsa = NA, maxhgt = NA,
-                         twi = NA, soilmcoefs = NA, soiltcoefs = NA) {
+                         twi = NA, soilmcoefs = NA, soiltcoefs = NA, runNMRmoist = FALSE,
+                         sm_max = NA, sm_min = NA) {
   # run ground rad if not run
   rhg<-ifelse(reqhgt<0,0.05,reqhgt)
   if (is.null(micro$gHa[1])) {
@@ -581,10 +582,17 @@ soiltemp_dy  <- function(microd, reqhgt = 0.05, xyf = 1, zf = NA, soilinit = c(N
     rnet<-swrad-lwnet
     rnet1<-rnet*mx
     rnet2<-rnet*mn
-    sm<-soilmpredict(micro_mn$prec,rnet1,"Loam",soilinit,soilmcoefs)
-    thetamx<-soilmdistribute(sm$soilm1,micro_mn$dtm)
-    sm<-soilmpredict(micro_mn$prec,rnet2,"Loam",soilinit,soilmcoefs)
-    thetamn<-soilmdistribute(sm$soilm1,micro_mn$dtm)
+    if (runNMRmoist) {
+      sm <- sm_max
+      thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
+      sm <- sm_min
+      thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
+    } else {
+      sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
+      thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
+      sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
+      thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
+    }
   }
   # Adjust soil moisture
   rsua<-.rta(raster(rsu),dim(thetamn)[3])
