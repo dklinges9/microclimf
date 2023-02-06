@@ -46,10 +46,10 @@ in topographic wetness (see [soilmdistribute()])}
 \item{surfwet}{an optional single numeric value of array of values specifying the proportion
 of the canopy surface that should be treated as wet surface (see details)}
 
-\item{slr}{an optional RasterLayer of slope values (Radians). Calculated from
+\item{slr}{an optional SpatRaster object of slope values (Radians). Calculated from
 dtm if not supplied, but outer cells will be NA.}
 
-\item{apr}{an optional RasterLayer of aspect values (Radians). Calculated from
+\item{apr}{an optional SpatRaster object of aspect values (Radians). Calculated from
 dtm if not supplied, but outer cells will be NA.}
 
 \item{hor}{an optional array of the tangent of the angle to the horizon in
@@ -61,7 +61,7 @@ Calculated from dtm if not supplied, but outer cells will be NA.}
 \item{maxhgt}{an optional height (m) for which wind speed is needed. Determined
 from height of tallest vegetation or as 2 m, whichever is greater, if not supplied.}
 
-\item{twi}{optional raster of topographic wetness index values.
+\item{twi}{optional SpatRaster object of topographic wetness index values.
 Calculated from `dtm` of not supplied, but outer cells will be NA.}
 }
 \value{
@@ -81,14 +81,20 @@ NA if `reqhgt` <= 0.
 `windspeed` Array of wind speeds at height `reqhgt` (m/s).
 NA if `reqhgt` <= 0.
 
-`raddir` Array of direct shortwave radiation received on horizontal
-surface (W/m^2). NA if `reqhgt` <= 0.
+`Rdirdown` Array of downward direct shortwave radiation incident on
+horizontal surface (W/m^2)
 
-`raddif` Array of direct shortwave radiation received on horizontal
-surface (W/m^2). NA if `reqhgt` <= 0.
+`Rdifdown` Array of downward diffuse shortwave radiation incident on
+horizontal surface (W/m^2)
 
-`radlw` Array of downward longwave radiation received on horizontal
-surface (W/m^2). NA if `reqhgt` <= 0.
+`Rlwdown` Array of downward longwave radiation incident on horizontal
+surface (W/m^2)
+
+`Rswup` Array of upward shortwave radiation (assumed diffuse) incident
+on underside of horizontal surface (W/m^2)
+
+`Rlwup` Array of upward longwave radiation incident on underside of
+horizontal surface (W/m^2)
 
 if expand = FALSE, an object of class microutdaily, list with the following components:
 
@@ -102,18 +108,10 @@ time increments, with the option to expand to hourly
 }
 \details{
 If expand = TRUE, daily minima and maxima are expanded to hourly using values in the hourly
-weather dataset. The parmater `pai_a` is used to calaculate the radiation incercepted by leaves at `reqhgt` if
-below canopy. If not supplied it is calaculated from total plant area index by
-assuming leaf density within the canopy is uniformly vertically distributed. If suuplied
-it must have the same dimensions as micro$pai. I.e. with the same x and y dims as the
-the supplied dtm and values for each hour as the z dimension. The paramater `surfwet`
-determines how much of the canopy should be treated as wet surface when calaculating
-latent heat fluxes. However, except when extremely droughted, the matric potential of leaves
-is such that `surfwet` ~ 1.
+weather dataset. See also details for [runmicro_hr()].
 }
 \examples{
-library(raster)
-library(sp)
+library(terra)
 library(zoo)
 library(abind)
 # Create model input with inbuilt datasets
@@ -121,19 +119,20 @@ microd<-modelin_dy(climdata,rainfall,vegp,soilc,dtmcaerth)
 # Run model 5 cm above ground  performing hourly expansion (takes ~50 seconds to run)
 mout<-runmicro_dy(microd, 0.05)
 # Plot air temperatures on hottest hour
-plot(raster(mout$Tz[,,4094]))
+plot(rast(mout$Tz[,,4094]))
 # Plot mean air temperatures
 mairt<-apply(mout$Tz,c(1,2),mean)
-plot(raster(mairt))
+plot(rast(mairt))
 # Plot ground temperatures on hottest and coldest hour
-plot(raster(mout$T0[,,991])) # coldest hour
-plot(raster(mout$T0[,,4094])) # hottest hour
+plot(rast(mout$T0[,,991])) # coldest hour
+plot(rast(mout$T0[,,4094])) # hottest hour
 # Run model 20 cm below ground
 mout<-runmicro_dy(microd, -0.2)
 # Extract and plot mean soil temperatures
 msoilt<-apply(mout$Tz,c(1,2),mean)
-plot(raster(msoilt))
+plot(rast(msoilt))
 }
 \seealso{
-[runmicro_hr()] for running microclimate model in hourly time-steps
+[runmicro_hr()] for running microclimate model in hourly time-steps and
+[runmicro_big()] for running the microclimate model over large areas as tiles.
 }
