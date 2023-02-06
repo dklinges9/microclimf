@@ -52,18 +52,21 @@
 #' Smooth SpatRaster
 #' @import terra
 .smr <- function(r,f,cors=NA) {
+  r <- raster(r)
   r2<-r
   r2[is.na(r2)]<-0
-  r3<-aggregate(r2,fact=f)
+  r3<-raster::aggregate(r2,fact=f)
   if (class(cors)!="logical") {
     crs(r3)<-cors
     crs(r2)<-cors
     crs(r)<-cors
   }
-  r3<-resample(r3,r2)
-  r3<-mask(r3,r)
-  r3
+  r3<-raster::resample(r3,r2)
+  r3<-raster::mask(r3,r)
+  rast(r3)
 }
+
+
 #' Smooth array
 #' @import terra
 .sma <- function(a,xyf,zf,cors=NA) {
