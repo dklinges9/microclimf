@@ -695,9 +695,7 @@ leafrfromalb<-function(pai, gref, x, alb, ltrr = 1, out = "lref") {
       }
     }
   }
-
   if (out!="omega") lref<-lref/(ltrr+1)
   lref<-.rast(lref,alb)
   return(lref)
 }
-
