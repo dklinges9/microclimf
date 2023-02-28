@@ -352,6 +352,8 @@
       a2[,,i]<-m
     }
   } else a2<-a
+  # Threshold above 0
+  a2[a2<0]<-0.00001
   a2
 }
 #' Calculate wind speeds accounting for topographic sheltering
@@ -977,8 +979,8 @@
 #' Calculates diurnal temperature fluctuation
 .A0f<-function(tc) {
   tc<-matrix(tc,ncol=24,byrow=T)
-  mn<-apply(tc,1,min)
-  mx<-apply(tc,1,max)
+  mn<-apply(tc,1,min,na.rm = T)
+  mx<-apply(tc,1,max,na.rm = T)
   A0<-(mx-mn)/2
   rep(A0,each=24)
 }
