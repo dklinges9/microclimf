@@ -504,9 +504,9 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
     rnet1<-rnet*mx
     rnet2<-rnet*mn
     sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
-    thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
+    thetamx<-soilmdistribute(sm$soilm1,micro$dtm, twi = twi)
     sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
-    thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
+    thetamn<-soilmdistribute(sm$soilm1,micro$dtm, twi = twi)
   }
   # Adjust soil moisture
   rsua<-.rta(rast(rsu),dim(thetamn)[3])
@@ -517,7 +517,7 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
   # Correct theta
   theta[theta<0.0002]<-0.0002
   sm<-log(theta/(1-theta))+8.516993
-  # Get paramaters
+  # Get parameters
   if (is.na(soiltcoefs[1])) {
     scfs<-.soilcoefs(micro$soilc)
   } else {
@@ -536,13 +536,13 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
   w2<-log(w2+1)
   # Predict soil surface temperature
   T0<-.rta(rast(scfs$int),hiy)+
-    .rta(rast(scfs$t1),hiy)*rnet+
+    aperm(aperm(.rta(rast(scfs$t1),hiy), c(3,1,2))*rnet, c(2,3,1))+
     .rta(rast(scfs$t2),hiy)*sm+
     .rta(rast(scfs$t3),hiy)*w2+
-    .rta(rast(scfs$t4),hiy)*sm*rnet+
+    aperm(aperm(.rta(rast(scfs$t4),hiy)*sm, c(3,1,2))*rnet, c(2,3,1))+
     .rta(rast(scfs$t5),hiy)*sm*w2+
-    .rta(rast(scfs$t6),hiy)*rnet*w2+
-    .rta(rast(scfs$t7),hiy)*rnet*sm*w2
+    aperm(aperm(.rta(rast(scfs$t6),hiy), c(3,1,2))*rnet, c(2,3,1))*w2+
+    aperm(aperm(.rta(rast(scfs$t7),hiy), c(3,1,2))*rnet, c(2,3,1))*sm*w2
   T0<-T0+micro$tc
   T0<-.lim(T0,micro$tdew)
   # Calculate soil conductivity and specific heat capacity
