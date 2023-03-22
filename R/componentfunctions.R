@@ -491,8 +491,15 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
   mn<-min(rsu,na.rm=T)
   # Calculate max and min soil moisture
   if (is.na(soilmcoefs[1])) {
-    thetamx<-.multisoil(micro,soilinit,tfact,mx,twi)
-    thetamn<-.multisoil(micro,soilinit,tfact,mn,twi)
+    if (runNMRmoist) {
+      sm <- sm_max
+      thetamx<-soilmdistribute(sm$WC0cm,micro$dtm, tfact = tfact, twi = twi)
+      sm <- sm_min
+      thetamn<-soilmdistribute(sm$WC0cm,micro$dtm, tfact = tfact, twi = twi)
+    } else {
+      thetamx<-.multisoil(micro,soilinit,tfact,mx,twi)
+      thetamn<-.multisoil(micro,soilinit,tfact,mn,twi)
+    }
   } else {
     clim<-micro$climdata
     soilc<-micro$soilc
@@ -503,10 +510,17 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
     rnet<-swrad-lwnet
     rnet1<-rnet*mx
     rnet2<-rnet*mn
-    sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
-    thetamx<-soilmdistribute(sm$soilm1,micro$dtm, twi = twi)
-    sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
-    thetamn<-soilmdistribute(sm$soilm1,micro$dtm, twi = twi)
+    if (runNMRmoist) {
+      sm <- sm_max
+      thetamx<-soilmdistribute(sm$WC0cm,micro$dtm, tfact = tfact, twi = twi)
+      sm <- sm_min
+      thetamn<-soilmdistribute(sm$WC0cm,micro$dtm, tfact = tfact, twi = twi)
+    } else {
+      sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
+      thetamx<-soilmdistribute(sm$soilm1,micro$dtm, tfact = tfact, twi = twi)
+      sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
+      thetamn<-soilmdistribute(sm$soilm1,micro$dtm, tfact = tfact, twi = twi)
+    }
   }
   # Adjust soil moisture
   rsua<-.rta(rast(rsu),dim(thetamn)[3])
@@ -535,14 +549,22 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, soi
   w2<-(micro$uf/0.4)*(log((micro$maxhgt-micro$d)/micro$zm)+micro$psi_m)
   w2<-log(w2+1)
   # Predict soil surface temperature
+  # T0<-.rta(rast(scfs$int),hiy)+
+  #   aperm(aperm(.rta(rast(scfs$t1),hiy), c(3,1,2))*rnet, c(2,3,1))+
+  #   .rta(rast(scfs$t2),hiy)*sm+
+  #   .rta(rast(scfs$t3),hiy)*w2+
+  #   aperm(aperm(.rta(rast(scfs$t4),hiy)*sm, c(3,1,2))*rnet, c(2,3,1))+
+  #   .rta(rast(scfs$t5),hiy)*sm*w2+
+  #   aperm(aperm(.rta(rast(scfs$t6),hiy), c(3,1,2))*rnet, c(2,3,1))*w2+
+  #   aperm(aperm(.rta(rast(scfs$t7),hiy), c(3,1,2))*rnet, c(2,3,1))*sm*w2
   T0<-.rta(rast(scfs$int),hiy)+
-    aperm(aperm(.rta(rast(scfs$t1),hiy), c(3,1,2))*rnet, c(2,3,1))+
+    .rta(rast(scfs$t1),hiy)*rnet+
     .rta(rast(scfs$t2),hiy)*sm+
     .rta(rast(scfs$t3),hiy)*w2+
-    aperm(aperm(.rta(rast(scfs$t4),hiy)*sm, c(3,1,2))*rnet, c(2,3,1))+
+    .rta(rast(scfs$t4),hiy)*sm*rnet+
     .rta(rast(scfs$t5),hiy)*sm*w2+
-    aperm(aperm(.rta(rast(scfs$t6),hiy), c(3,1,2))*rnet, c(2,3,1))*w2+
-    aperm(aperm(.rta(rast(scfs$t7),hiy), c(3,1,2))*rnet, c(2,3,1))*sm*w2
+    .rta(rast(scfs$t6),hiy)*rnet*w2+
+    .rta(rast(scfs$t7),hiy)*rnet*sm*w2
   T0<-T0+micro$tc
   T0<-.lim(T0,micro$tdew)
   # Calculate soil conductivity and specific heat capacity
@@ -656,17 +678,10 @@ soiltemp_dy  <- function(microd, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA, so
     rnet<-swrad-lwnet
     rnet1<-rnet*mx
     rnet2<-rnet*mn
-    if (runNMRmoist) {
-      sm <- sm_max
-      thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
-      sm <- sm_min
-      thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
-    } else {
-      sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
-      thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
-      sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
-      thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
-    }
+    sm<-soilmpredict(micro$prec,rnet1,"Loam",soilinit,soilmcoefs)
+    thetamx<-soilmdistribute(sm$soilm1,micro$dtm)
+    sm<-soilmpredict(micro$prec,rnet2,"Loam",soilinit,soilmcoefs)
+    thetamn<-soilmdistribute(sm$soilm1,micro$dtm)
   }
   # Adjust soil moisture
   rsua<-.rta(rast(rsu),dim(thetamn)[3])
