@@ -358,8 +358,8 @@ globalVariables("globclim")
   if (habitat == 2) { # Evergreen broadleaf forest
     hgt<-20 # Vegetation height
     x<-1.2  # Campbell x
-    gsmax<-0.33 # Maximum stomatal conductance
-    leafr<-0.3 # Leaf reflectivity (shortwave)
+    gsmax<-0.4 # Maximum stomatal conductance
+    leafr<-0.4 # Leaf reflectivity (shortwave)
     leafd<-0.35 # Leaf width (m)
   }
   if (habitat == 3) { # Deciduous needleleaf forest
@@ -412,14 +412,14 @@ globalVariables("globclim")
     leafd<-0.01 # Leaf width (m)
   }
   if (habitat == 10) { # Short grasslands
-    hgt<-0.25 # Vegetation height
+    hgt<-0.1 # Vegetation height
     x<-0.15  # Campbell x
     gsmax<-0.33 # Maximum stomatal conductance
     leafr<-0.35 # Leaf reflectivity (shortwave)
     leafd<-0.01 # Leaf width (m)
   }
   if (habitat == 11) { # Tall grasslands
-    hgt<-1.5 # Vegetation height
+    hgt<-1.0 # Vegetation height
     x<-0.15  # Campbell x
     gsmax<-0.33 # Maximum stomatal conductance
     leafr<-0.35 # Leaf reflectivity (shortwave)
@@ -440,11 +440,11 @@ globalVariables("globclim")
     leafd<-0.02 # Leaf width (m)
   }
   if (habitat == 14) { # Urban and built-up
-    hgt<-1.5 # Vegetation height
+    hgt<-0 # Vegetation height
     x<-1  # Campbell x
-    gsmax<-0.33 # Maximum stomatal conductance
-    leafr<-0.3 # Leaf reflectivity (shortwave)
-    leafd<-0.04 # Leaf width (m)
+    gsmax<-0.05 # Maximum stomatal conductance
+    leafr<-0.1 # Leaf reflectivity (shortwave)
+    leafd<-0.0 # Leaf width (m)
   }
   if (habitat == 15) { # Cropland/Natural vegetation mosaic
     hgt<-1 # Vegetation height
@@ -454,10 +454,10 @@ globalVariables("globclim")
     leafd<-0.03 # Leaf width (m)
   }
   if (habitat == 16) { # Barren or sparsely vegetated
-    hgt<-0.15 # Vegetation height
+    hgt<-0.1 # Vegetation height
     x<-0.6  # Campbell x
-    gsmax<-0.33 # Maximum stomatal conductance
-    leafr<-0.3 # Leaf reflectivity (shortwave)
+    gsmax<-0.05 # Maximum stomatal conductance
+    leafr<-0.05 # Leaf reflectivity (shortwave)
     leafd<-0.015 # Leaf width (m)
   }
   if (habitat == 17) { # Open water
