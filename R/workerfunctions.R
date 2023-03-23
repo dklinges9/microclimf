@@ -228,7 +228,7 @@
   dtm3[101:(x+100),101:(y+100)]<-dtm
   for (step in 1:10) {
     horizon[1:x,1:y]<-pmax(horizon[1:x,1:y],(dtm3[(101-cos(azi)*step^2):(x+100-cos(azi)*step^2),
-                                                  (101+sin(azi)*step^2):(y+100+sin(azi)*step^2)]-dtm3[101:(x+100),101:(y+100)])/(step^2))
+                                                  (101+sin(azi)*step^2):(y+100+sin(azi)*step^2)]-dtm3[101:(x+100),101:(y+100)])/(step^2),na.rm=T)
   }
   horizon
 }
@@ -318,7 +318,7 @@
   dtm3[101:(x + 100), 101:(y + 100)] <- dtm
   for (step in 1:10) {
     horizon[1:x,1:y]<-pmax(horizon[1:x,1:y],(dtm3[(101-cos(azi)*step^2):(x+100-cos(azi)*step^2),
-                                                  (101+sin(azi)*step^2):(y+100+sin(azi)*step^2)]-dtm3[101:(x+100),101:(y+100)])/(step^2))
+                                                  (101+sin(azi)*step^2):(y+100+sin(azi)*step^2)]-dtm3[101:(x+100),101:(y+100)])/(step^2),na.rm=T)
     horizon[1:x,1:y]<-ifelse(horizon[1:x,1:y]<(hgt/step^2),0,horizon[1:x,1:y])
   }
   index<-1-atan(0.17*100*horizon)/1.65
@@ -438,7 +438,7 @@
   y <- arrayInd(v, dim(md))[, 2]
   for (i in 1:length(x)) {
     md9 <- md2[x[i]:(x[i] + 2), y[i]:(y[i] + 2)]
-    fd[x[i], y[i]] <- round(mean(which(md9 == min(md9, na.rm = T))), 0)
+    fd[x[i], y[i]] <- round(mean(which(md9 == min(md9, na.rm = T)),na.rm=T), 0)
   }
   fd
 }
@@ -504,7 +504,7 @@
   n<-dim(a)[1]*dim(a)[2]
   o1<-rep(c(1:n),24*dim(a)[3])
   o2<-rep(c(1:dim(a)[3]),each=24*n)-1
-  o2<-o2*max(o1)
+  o2<-o2*max(o1,na.rm=T)
   o<-o1+o2
   ah<-rep(a,24)
   ah<-ah[o]
@@ -840,7 +840,7 @@
   dni2<-ifelse(dni>1352,1352,dni)
   dirr2<-dni2*si
   dif<-dirr-dirr2
-  if (max(dif) > 0.01) {
+  if (max(dif,na.rm=T) > 0.01) {
     stop("Computed direct radiation values too high near dawn / dusk. Divide values by cos (zenith angle) and then cap at 1352")
     weather$difrad<-weather$difrad+dif
   }
@@ -850,8 +850,8 @@
   weather$swrad<-ifelse(weather$swrad>1352,1352,weather$swrad)
   weather$difrad<-ifelse(weather$difrad>1352,1352,weather$difrad)
   # Wind direction
-  mn<-min(weather$winddir)
-  mx<-max(weather$winddir)
+  mn<-min(weather$winddir,na.rm=T)
+  mx<-max(weather$winddir,na.rm=T)
   if (mn<0 | mx>360) {
     weather$winddir<-weather$winddir%%360
     stop("wind direction must be in range 0-360. Apply modulo operation")
@@ -1025,7 +1025,7 @@
   H<-0.5*(Rabs-Rem)
   T0<-tc
   dT<-0
-  Tmx<-max(tc)+30
+  Tmx<-max(tc,na.rm=T)+30
   count<-0
   tst<-1
   while (tst > 0) {
@@ -1060,12 +1060,12 @@
     gmin[gmin<gmn]<-gmn
     Rem<-0.97*5.67*10^-8*(T0+273.15)^4
     count<-count+1
-    if (max(dif)<0.5) tst<-0
+    if (max(dif,na.rm=T)<0.5) tst<-0
     if (count>=maxiter) tst<-0
   }
   txt<-paste0("Microclimate iteration model didn't convege. Max difference: ",
-              round(max(dif),2),". Try a higher backweight and maxiter or gmn")
-  if (max(dif) > 5) warning(txt)
+              round(max(dif,na.rm=T),2),". Try a higher backweight and maxiter or gmn")
+  if (max(dif,na.rm=T) > 5) warning(txt)
   if (ti != 1) {
     td<-matrix(climdata$temp,ncol=24,byrow=TRUE)
     tc1<-mean(micro$tc,na.rm=T)
