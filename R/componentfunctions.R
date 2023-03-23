@@ -399,7 +399,10 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, soilinit = c(NA, NA),
   # Calculate wind shelter coefficient
   dsm<-micro$dtm+micro$veghgt
   s<-1
-  if (res(micro$dtm)[1]<=100) s<-10
+  # Quick change to Ilya's code to identify if in decimal degrees or meters
+  # Prior code assumed micro$dtm had resolution in meters
+  if (res(micro$dtm)[1]<=0.0008333) s<-10
+  if (res(micro$dtm)[1]>=1 & res(micro$dtm)[1]<=100) s<-10
   micro$ws<-.windshelter(micro$climdata$winddir,dsm,2,s,wsa)
   # Calculate wind at 2 m height
   maxhgt<-max(as.vector(micro$veghgt),na.rm=T)+2
