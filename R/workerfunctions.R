@@ -959,8 +959,13 @@
 #' Calculates diurnal temperature fluctuation
 .A0f<-function(tc) {
   tc<-matrix(tc,ncol=24,byrow=T)
-  mn<-apply(tc,1,min,na.rm = T)
-  mx<-apply(tc,1,max,na.rm = T)
+  if(!all(is.na(tc))) {
+    mn<-apply(tc,1,min,na.rm = T)
+    mx<-apply(tc,1,max,na.rm = T)
+  } else {
+    mn<-rep(NA,length(tc)/24)
+    mx<-rep(NA,length(tc)/24)
+  }
   A0<-(mx-mn)/2
   rep(A0,each=24)
 }
