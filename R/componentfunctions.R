@@ -469,7 +469,7 @@ soiltemp_hr  <- function(micro, reqhgt = 0.05, pai_a = NA, soilinit = c(NA, NA),
   micro$Vm<-NULL
   micro$Vq<-NULL
   micro$Mc<-NULL
-  micro$soilc<-NULL
+  # micro$soilc<-NULL
   micro$radGsw<-NULL
   micro$radGlw<-NULL
   return(micro)
@@ -1069,8 +1069,18 @@ temphumE<-function(micro, climdata, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA,
   micro$Tz<-Tzb$To
   # Compute leaf temperature
   micro<-.leaftemp(micro,gs,reqhgt,TH$tcan,Tzb$leafabs)
+  # Prep soil inputs for calculating relative humidity
+  soiltype <- .rta(micro$soilc$soiltype, 1)
+  smins <- soilparameters$Smin
+  smaxs <- soilparameters$Smax
+  nums <- soilparameters$Number
+  n <- length(micro$tme)
+  Smin <- apply(soiltype, c(1,2), function(x) {smins[which(nums==x)]})
+  Smin <- array(rep(Smin,n),dim=c(dim(Smin)[1:2],n))
+  Smax <- apply(soiltype, c(1,2), function(x) {smaxs[which(nums==x)]})
+  Smax <- array(rep(Smax,n),dim=c(dim(Smax)[1:2],n))
   # Compute relative humidity
-  rh<-.LangrangianSimV(reqhgt,micro,ez,surfwet)
+  rh<-.LangrangianSimV(reqhgt,micro,ez,surfwet,Smax,Smin)
   # Return values needed
   micro<-list(Tz=micro$Tz,tleaf=micro$tleaf,T0=micro$T0,soilm=micro$theta,relhum=rh,windspeed=micro$uz,
               Rdirdown=micro$Rbdown,Rdifdown=micro$Rddown,Rlwdown=Tzb$Rldown,

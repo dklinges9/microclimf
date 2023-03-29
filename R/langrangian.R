@@ -86,14 +86,17 @@
   micro$gh<-gh
   return(micro)
 }
-.LangrangianSimV<-function(reqhgt,micro,ez,surfwet) {
+.LangrangianSimV<-function(reqhgt,micro,ez,surfwet,Smax,Smin) {
   # Calculate soil surface effective vapour pressure
   n<-dim(ez)[3]
-  rhs<-.soilrh(micro$theta,
-               .rta(rast(micro$soilb),n),
-               .rta(rast(micro$psi_e),n),
-               .rta(rast(micro$Smax),n),
-               micro$T0)
+  # rhs<-.soilrh(micro$theta,
+  #              .rta(rast(micro$soilb),n),
+  #              .rta(rast(micro$psi_e),n),
+  #              .rta(rast(micro$Smax),n),
+  #              micro$T0)
+  # Ilya's proposed dirty fix for such high soil RH's is simply this single line
+  # below, which he sent to you on 29 March 2023:
+  rhs<-(micro$theta-Smin)/(Smax-Smin)
   e0<-.satvap(micro$T0)*rhs
   # Calculate d and zh of ground-layer
   d<-0.075*micro$vha
