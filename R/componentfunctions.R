@@ -1082,7 +1082,8 @@ temphumE<-function(micro, climdata, reqhgt = 0.05, pai_a = NA, xyf = 1, zf = NA,
   # Compute relative humidity
   rh<-.LangrangianSimV(reqhgt,micro,ez,surfwet,Smax,Smin)
   # Return values needed
-  micro<-list(Tz=micro$Tz,tleaf=micro$tleaf,T0=micro$T0,soilm=micro$theta,relhum=rh,windspeed=micro$uz,
+  micro<-list(Tz=micro$Tz,tleaf=micro$tleaf,tcan=TH$tcan,T0=micro$T0,
+              soilm=micro$theta,relhum=rh,windspeed=micro$uz,
               Rdirdown=micro$Rbdown,Rdifdown=micro$Rddown,Rlwdown=Tzb$Rldown,
               Rswup=micro$Rdup,Rlwup=Tzb$Rlwup)
   class(micro)<-"microout"
