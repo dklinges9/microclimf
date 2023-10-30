@@ -153,7 +153,7 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
       }
     }
     ro<-.rast(a,r)
-    ro<-resample(ro,rfi)
+    ro<-raster::resample(ro,rfi)
     as.array(ro)
   }
   weather<-list()
@@ -189,13 +189,13 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
   tdew<-.dewpoint(ea,tc)
   # Apply altitudinal correction
   if (altcorrect == 0) {  # No altitudinal correction
-    pk<-as.array(resample(.rast(pk,r),rfi))
+    pk<-as.array(raster::resample(.rast(pk,r),rfi))
   } else { # Altitudinal correction applied
     dtmc[is.na(dtmc)]<-0
     psl<-pk/(((293-0.0065*.rta(dtmc,h))/293)^5.26)
-    psl<-as.array(resample(.rast(psl,r),rfi))
+    psl<-as.array(raster::resample(.rast(psl,r),rfi))
     pk<-psl*(((293-0.0065*.rta(rfi,h))/293)^5.26)
-    dc<-resample(dtmc,rfi)
+    dc<-raster::resample(dtmc,rfi)
     elevd<-.rta(dc-dtm,h)
     if (altcorrect==1) {  # Fixed lapse rate
       tcdif<-elevd*(5/1000)
@@ -229,8 +229,8 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
   wd<-.cca(weather,"winddir",h,r,r)
   wu<-u2*cos(wd*pi/180)
   wv<-u2*sin(wd*pi/180)
-  wu<-as.array(resample(.rast(wu,r),rfi))
-  wv<-as.array(resample(.rast(wv,r),rfi))
+  wu<-as.array(raster::resample(.rast(wu,r),rfi))
+  wv<-as.array(raster::resample(.rast(wv,r),rfi))
   u2<-sqrt(wu^2+wv^2)
   wdir<-(atan2(wv,wu)*180/pi)%%360
   # Turn point model variables into arrays
@@ -246,9 +246,9 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
       k<-k+1
     }
   }
-  ufp<-as.array(resample(.rast(ufp,r),rfi))
-  soilmp<-as.array(resample(.rast(soilmp,r),rfi))
-  Gp<-as.array(resample(.rast(Gp,r),rfi))
+  ufp<-as.array(raster::resample(.rast(ufp,r),rfi))
+  soilmp<-as.array(raster::resample(.rast(soilmp,r),rfi))
+  Gp<-as.array(raster::resample(.rast(Gp,r),rfi))
   if (class(micropointa[[1]]$Tbz) != "logical")  {
     Tbp<-array(NA,dim=c(dim(r)[1:2],h))
     Tg<-Tbp
@@ -260,8 +260,8 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
         k<-k+1
       }
     }
-    Tg<-as.array(resample(.rast(Tg,r),rfi))
-    Tbp<-as.array(resample(.rast(Tbp,r),rfi))
+    Tg<-as.array(raster::resample(.rast(Tg,r),rfi))
+    Tbp<-as.array(raster::resample(.rast(Tbp,r),rfi))
   } else {
     Tbp<-NA
     Tg<-NA
@@ -274,7 +274,7 @@ modelina <- function(micropointa, vegp, soilc, dtm, dtmc, altcorrect = 0, runche
       k<-k+1
     }
   }
-  T0p<-as.array(resample(.rast(T0p,r),rfi))
+  T0p<-as.array(raster::resample(.rast(T0p,r),rfi))
   # Obtain derived variables
   vegx<-.rta(vegp$x,h)
   lref<-.rta(vegp$leafr,h)
