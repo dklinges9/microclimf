@@ -569,7 +569,7 @@ below_hr<-function(micro, reqhgt, pai_a = NA, tfact = 1.5,
     micro<-soiltemp_hr(micro,reqhgt,pai_a,tfact,slr,apr,hor,twi,wsa)
   }
   # Calculate n
-  n<- -118.35*reqhgt/mean(micro$DDp)
+  n<- -118.35*reqhgt/mean(micro$DDp, na.rm = T)
   hiy<-ifelse((micro$tme$year[1]+1900)%%4==0,366*24,365*24)
   # Test whether comple time sequence
   tst<-as.numeric(micro$tme[25])-as.numeric(micro$tme[24])
